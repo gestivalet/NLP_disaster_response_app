@@ -31,7 +31,7 @@ def load_data(database_filepath):
     # load data from database
     engine = create_engine('sqlite:///'+database_filepath)
     df = pd.read_sql('select * from main_table', con=engine)
-    df = df.drop('original', axis=1).dropna().sample(n=100)
+    df = df.drop('original', axis=1).dropna()
     print(df.shape)
 
     X = df['message']
