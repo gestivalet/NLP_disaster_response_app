@@ -62,39 +62,46 @@ def build_model():
     Return grid object (without fitting it to the data).
     """
 
-    multi_clf = MultiOutputClassifier(XGBClassifier(objective='binary:logistic',
-                                                    random_state=42))
+    multi_clf = MultiOutputClassifier(RandomForestClassifier(n_estimators=100,
+                                                         class_weight='balanced',
+                                                         random_state=42))
 
-    pipe = Pipeline([ # Feature Union (not currently being used)
+    pipe = Pipeline([ # Feature Union
             ('features', FeatureUnion([
                 
                 ('text_pipeline', Pipeline([
                     ('vect', CountVectorizer(tokenizer=tokenize)),
                     ('tfidf', TfidfTransformer())
                 ])),
+
+                #('starting_verb', StartingVerbExtractor())
             ])),
 
             ('clf', multi_clf)
         ])
 
+
     # parameters
-    params = {'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+    params = { # Random Forest Classifier 
+              'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
               'features__text_pipeline__vect__max_features': (None, 5000),
               'features__text_pipeline__tfidf__use_idf': (True, False),
+              'features__text_pipeline__tfidf__norm':['l1','l2'],
               
-              # XGBoost Classifier 
-              'clf__estimator__n_estimators': [5],
-              'clf__estimator__learning_rate': [1],
-              'clf__estimator__max_depth':[5],
+              'clf__estimator__max_depth':[5, 7, 10, 12],
+              'clf__estimator__min_samples_split':[2, 20, 40],
              }
 
-    # grid Search
-    grid = GridSearchCV(pipe, param_grid=params,
-                        cv=2, n_jobs=1,
-                        verbose=0, error_score=0,
-                        return_train_score=True)
 
-    return grid
+    # grid Search
+    model = RandomizedSearchCV(pipe, param_distributions=params,
+                              cv=2, n_jobs=2, verbose=1,
+                              return_train_score=True,
+                              random_state=42,
+                              n_iter=3)
+
+
+    return model
 
 
 def evaluate_model(model, X_test, y_test):
