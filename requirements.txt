@@ -46,7 +46,7 @@ jupyter-latex-envs==1.4.1
 jupyter-nbextensions-configurator==0.3.0
 kiwisolver==1.1.0
 kmodes==0.8
-lxml==4.1.1
+lxml==4.6.2
 MarkupSafe==1.1.1
 matplotlib==3.1.1
 mistune==0.8.4
